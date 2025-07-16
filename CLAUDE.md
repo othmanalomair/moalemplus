@@ -14,7 +14,7 @@
 
 ## التقنيات المستخدمة
 - **Backend**: Go + Fiber framework
-- **Frontend**: Next.js 14 (App Router) + TypeScript
+- **Frontend**: Next.js 15.4.1 (App Router) + TypeScript + React 19.1.0
 - **Database**: PostgreSQL + Redis
 - **File Storage**: MinIO (S3-compatible)
 - **Real-time**: Centrifugo
