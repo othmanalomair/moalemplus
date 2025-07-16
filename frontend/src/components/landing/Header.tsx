@@ -55,13 +55,13 @@ const Header = () => {
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-4">
             <Link
-              href="/login"
+              href="/auth/login"
               className="text-primary hover:text-primary/80 transition-colors duration-200"
             >
               تسجيل الدخول
             </Link>
             <Link
-              href="/register"
+              href="/auth/register"
               className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary/90 transition-colors duration-200"
             >
               ابدأ الآن
@@ -133,14 +133,14 @@ const Header = () => {
               </Link>
               <div className="pt-4 space-y-2">
                 <Link
-                  href="/login"
+                  href="/auth/login"
                   className="block px-3 py-2 text-primary hover:text-primary/80 transition-colors duration-200"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   تسجيل الدخول
                 </Link>
                 <Link
-                  href="/register"
+                  href="/auth/register"
                   className="block px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors duration-200 text-center"
                   onClick={() => setIsMenuOpen(false)}
                 >

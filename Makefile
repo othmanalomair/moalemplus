@@ -1,7 +1,7 @@
 # معلم+ (Moalem Plus) - Makefile
 # Makefile for managing frontend and backend development
 
-.PHONY: help install dev-frontend dev-backend dev build-frontend build-backend build clean test lint
+.PHONY: help install dev-frontend dev-backend dev build-frontend build-backend build clean test lint db-setup db-migrate db-reset status
 
 # Default target
 help:
@@ -10,27 +10,35 @@ help:
 	@echo "Development:"
 	@echo "  install        - Install all dependencies (frontend + backend)"
 	@echo "  dev-frontend   - Start frontend development server"
-	@echo "  dev-backend    - Start backend development server (when available)"
+	@echo "  dev-backend    - Start backend development server"
 	@echo "  dev            - Start both frontend and backend in parallel"
 	@echo ""
 	@echo "Build:"
 	@echo "  build-frontend - Build frontend for production"
-	@echo "  build-backend  - Build backend for production (when available)"
+	@echo "  build-backend  - Build backend for production"
 	@echo "  build          - Build both frontend and backend"
 	@echo ""
+	@echo "Database:"
+	@echo "  db-setup       - Create database"
+	@echo "  db-migrate     - Run database migrations"
+	@echo "  db-reset       - Reset database and run migrations"
+	@echo ""
 	@echo "Maintenance:"
-	@echo "  clean          - Clean all build artifacts and node_modules"
+	@echo "  clean          - Clean all build artifacts"
 	@echo "  test           - Run all tests"
 	@echo "  lint           - Run linting for frontend"
+	@echo "  status         - Show project status"
 	@echo ""
-	@echo "Quick start: make install && make dev-frontend"
+	@echo "Quick start: make install && make db-setup && make db-migrate"
 
 # Install dependencies
 install:
 	@echo "📦 Installing frontend dependencies..."
 	cd frontend && npm install
 	@echo "✅ Frontend dependencies installed"
-	@echo "⚠️  Backend not yet available - will be added in phase 2"
+	@echo "📦 Installing backend dependencies..."
+	cd backend && go mod tidy
+	@echo "✅ Backend dependencies installed"
 
 # Development servers
 dev-frontend:
@@ -39,14 +47,16 @@ dev-frontend:
 	cd frontend && npm run dev
 
 dev-backend:
-	@echo "⚠️  Backend not yet implemented"
-	@echo "🔧 Backend will be available in development phase 2"
+	@echo "🚀 Starting backend development server..."
+	@echo "🌐 Backend will be available at: http://localhost:8080"
+	cd backend && go run cmd/api/main.go
 
 dev:
 	@echo "🚀 Starting development environment..."
-	@echo "📝 Currently only frontend is available"
-	@echo "🔧 Backend will be added in phase 2"
-	make dev-frontend
+	@echo "🌐 Frontend: http://localhost:3000"
+	@echo "🌐 Backend: http://localhost:8080"
+	@echo "🔄 Starting both servers in parallel..."
+	make dev-frontend & make dev-backend
 
 # Build commands
 build-frontend:
@@ -55,20 +65,23 @@ build-frontend:
 	@echo "✅ Frontend build completed"
 
 build-backend:
-	@echo "⚠️  Backend build not yet available"
-	@echo "🔧 Backend will be available in development phase 2"
+	@echo "🏗️  Building backend for production..."
+	cd backend && go build -o bin/api cmd/api/main.go
+	@echo "✅ Backend build completed"
 
 build:
 	@echo "🏗️  Building project..."
 	make build-frontend
+	make build-backend
 	@echo "✅ Build completed"
 
 # Testing
 test:
 	@echo "🧪 Running tests..."
 	cd frontend && npm run lint
-	@echo "⚠️  Unit tests will be added in later phases"
-	@echo "✅ Basic checks completed"
+	@echo "🧪 Running backend tests..."
+	cd backend && go test ./...
+	@echo "✅ Tests completed"
 
 # Linting
 lint:
@@ -80,6 +93,7 @@ lint:
 clean:
 	@echo "🧹 Cleaning build artifacts..."
 	cd frontend && rm -rf .next node_modules package-lock.json
+	cd backend && rm -rf bin/
 	@echo "✅ Cleanup completed"
 
 # Docker commands (for future use)
@@ -89,19 +103,32 @@ docker-build:
 docker-dev:
 	@echo "🐳 Docker development environment will be added later"
 
-# Database commands (for future use)
+# Database commands
 db-setup:
-	@echo "🗄️  Database setup will be available in phase 3"
+	@echo "🗄️  Setting up database..."
+	createdb moalemplus 2>/dev/null || true
+	@echo "✅ Database setup completed"
 
 db-migrate:
-	@echo "🗄️  Database migrations will be available in phase 3"
+	@echo "🗄️  Running database migrations..."
+	cd backend && psql moalemplus -f database/migrations/001_create_schools_table.sql
+	cd backend && psql moalemplus -f database/migrations/002_create_users_table.sql
+	cd backend && psql moalemplus -f database/migrations/003_create_sessions_table.sql
+	@echo "✅ Database migrations completed"
+
+db-reset:
+	@echo "🗄️  Resetting database..."
+	dropdb moalemplus 2>/dev/null || true
+	createdb moalemplus
+	make db-migrate
+	@echo "✅ Database reset completed"
 
 # Status check
 status:
 	@echo "📊 Project Status:"
 	@echo "  ✅ Phase 1: Landing Page - COMPLETED"
-	@echo "  🔧 Phase 2: Authentication System - IN PROGRESS"
-	@echo "  ⏳ Phase 3: Database Setup - PENDING"
+	@echo "  🔧 Phase 2: Authentication System - BACKEND COMPLETED"
+	@echo "  ✅ Phase 3: Database Setup - COMPLETED"
 	@echo "  ⏳ Phase 4: Teacher Dashboard - PENDING"
 	@echo "  ⏳ Phase 5: Class Management - PENDING"
 	@echo "  ⏳ Phase 6: Test Creation System - PENDING"

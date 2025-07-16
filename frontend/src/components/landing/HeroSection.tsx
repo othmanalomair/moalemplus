@@ -45,7 +45,7 @@ const HeroSection = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
             <Link
-              href="/register"
+              href="/auth/register"
               className="bg-secondary text-primary px-6 sm:px-8 py-3 sm:py-4 rounded-lg font-semibold text-base sm:text-lg hover:bg-secondary/90 transition-all duration-200 transform hover:scale-105 shadow-lg w-full sm:w-auto text-center"
             >
               ابدأ التجربة المجانية

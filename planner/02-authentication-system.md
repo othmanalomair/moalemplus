@@ -6,46 +6,46 @@
 ## قائمة المهام
 
 ### Backend (Go/Fiber)
-- [ ] إعداد مشروع Go مع Fiber framework
-- [ ] إعداد قاعدة بيانات PostgreSQL
-- [ ] إنشاء جداول قاعدة البيانات:
-  - [ ] schools table
-  - [ ] users table
-  - [ ] sessions table
-- [ ] تطبيق database migrations
-- [ ] تطوير Auth endpoints:
-  - [ ] POST /api/auth/register
-  - [ ] POST /api/auth/login
-  - [ ] POST /api/auth/refresh
-  - [ ] POST /api/auth/logout
-  - [ ] GET /api/auth/me
-- [ ] تنفيذ JWT middleware
-- [ ] إضافة refresh token logic
-- [ ] تشفير كلمات المرور
+- [x] إعداد مشروع Go مع Fiber framework
+- [x] إعداد قاعدة بيانات PostgreSQL
+- [x] إنشاء جداول قاعدة البيانات:
+  - [x] schools table
+  - [x] users table
+  - [x] sessions table
+- [x] تطبيق database migrations
+- [x] تطوير Auth endpoints:
+  - [x] POST /api/auth/register
+  - [x] POST /api/auth/login
+  - [x] POST /api/auth/refresh
+  - [x] POST /api/auth/logout
+  - [x] GET /api/auth/me
+- [x] تنفيذ JWT middleware
+- [x] إضافة refresh token logic
+- [x] تشفير كلمات المرور
 - [ ] Rate limiting للحماية
 
 ### Frontend
-- [ ] صفحة تسجيل الدخول:
-  - [ ] نموذج البطاقة المدنية
-  - [ ] نموذج كلمة المرور
-  - [ ] زر "تذكرني"
-  - [ ] رابط "نسيت كلمة المرور"
-- [ ] صفحة التسجيل:
-  - [ ] نموذج معلومات شخصية
-  - [ ] نموذج معلومات المدرسة
-  - [ ] اختيار المرحلة والمواد
-- [ ] Auth context/store (Zustand)
-- [ ] Protected routes
-- [ ] تخزين JWT بشكل آمن
-- [ ] Auto refresh token
-- [ ] رسائل الخطأ باللغة العربية
+- [x] صفحة تسجيل الدخول:
+  - [x] نموذج البطاقة المدنية
+  - [x] نموذج كلمة المرور
+  - [x] زر "تذكرني"
+  - [x] رابط "نسيت كلمة المرور"
+- [x] صفحة التسجيل:
+  - [x] نموذج معلومات شخصية
+  - [x] نموذج معلومات المدرسة
+  - [x] اختيار المرحلة والمواد
+- [x] Auth context/store (Zustand)
+- [x] Protected routes
+- [x] تخزين JWT بشكل آمن
+- [x] Auto refresh token
+- [x] رسائل الخطأ باللغة العربية
 
 ### الأمان
 - [ ] HTTPS إجباري
-- [ ] CORS configuration
-- [ ] Input validation
-- [ ] SQL injection protection
-- [ ] XSS protection
+- [x] CORS configuration
+- [x] Input validation
+- [x] SQL injection protection
+- [x] XSS protection
 - [ ] CSRF tokens
 
 ### الاختبار
@@ -62,7 +62,7 @@
 - `/internal/middleware/auth.go`
 - `/migrations/*`
 
-### Frontend  
+### Frontend
 - `/app/(auth)/login/page.tsx`
 - `/app/(auth)/register/page.tsx`
 - `/lib/auth.ts`
@@ -72,4 +72,3 @@
 ## ملاحظات
 - التأكد من دعم صيغة البطاقة المدنية الكويتية
 - إضافة خيار تسجيل الدخول برقم الهاتف
-- إمكانية ربط حساب Google/Microsoft

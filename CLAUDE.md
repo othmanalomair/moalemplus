@@ -126,6 +126,16 @@
 - `npm run dev` - تشغيل الـ frontend
 - `docker-compose up` - تشغيل البيئة كاملة
 - `migrate -path database/migrations -database $DATABASE_URL up` - تشغيل migrations
+- `psql moalemplus` - الدخول إلى PostgreSQL CLI للقاعدة
+- `make help` - عرض قائمة الأوامر المتاحة
+- `make install` - تثبيت جميع التبعيات
+- `make dev-frontend` - تشغيل الـ frontend
+- `make dev-backend` - تشغيل الـ backend
+- `make dev` - تشغيل الـ frontend والـ backend معاً
+- `make build` - بناء المشروع للإنتاج
+- `make clean` - تنظيف ملفات البناء
+- `make test` - تشغيل الاختبارات
+- `make lint` - فحص الكود
 
 ## متطلبات خاصة
 - دعم كامل للغة العربية وRTL

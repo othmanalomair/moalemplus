@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Noto_Naskh_Arabic } from "next/font/google";
 import "./globals.css";
+import AuthProvider from '@/components/auth/AuthProvider';
 
 const notoNaskhArabic = Noto_Naskh_Arabic({
   variable: "--font-noto-naskh-arabic",
@@ -30,7 +31,9 @@ export default function RootLayout({
       <body
         className={`${notoNaskhArabic.variable} font-arabic antialiased`}
       >
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
