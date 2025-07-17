@@ -114,6 +114,16 @@ db-migrate:
 	cd backend && psql moalemplus -f database/migrations/001_create_schools_table.sql
 	cd backend && psql moalemplus -f database/migrations/002_create_users_table.sql
 	cd backend && psql moalemplus -f database/migrations/003_create_sessions_table.sql
+	cd backend && psql moalemplus -f database/migrations/004_create_subjects_table.sql
+	cd backend && psql moalemplus -f database/migrations/005_create_curriculum_units_table.sql
+	cd backend && psql moalemplus -f database/migrations/006_create_classes_table.sql
+	cd backend && psql moalemplus -f database/migrations/007_create_students_table.sql
+	cd backend && psql moalemplus -f database/migrations/008_create_student_parents_table.sql
+	cd backend && psql moalemplus -f database/migrations/009_create_questions_table.sql
+	cd backend && psql moalemplus -f database/migrations/010_create_tests_table.sql
+	cd backend && psql moalemplus -f database/migrations/011_create_test_questions_table.sql
+	cd backend && psql moalemplus -f database/migrations/012_create_test_submissions_table.sql
+	cd backend && psql moalemplus -f database/migrations/013_create_attendance_table.sql
 	@echo "✅ Database migrations completed"
 
 db-reset:
@@ -127,10 +137,10 @@ db-reset:
 status:
 	@echo "📊 Project Status:"
 	@echo "  ✅ Phase 1: Landing Page - COMPLETED"
-	@echo "  🔧 Phase 2: Authentication System - BACKEND COMPLETED"
+	@echo "  ✅ Phase 2: Authentication System - COMPLETED"
 	@echo "  ✅ Phase 3: Database Setup - COMPLETED"
-	@echo "  ⏳ Phase 4: Teacher Dashboard - PENDING"
-	@echo "  ⏳ Phase 5: Class Management - PENDING"
+	@echo "  ✅ Phase 4: Teacher Dashboard - COMPLETED"
+	@echo "  ✅ Phase 5: Class Management - COMPLETED"
 	@echo "  ⏳ Phase 6: Test Creation System - PENDING"
 	@echo "  ⏳ Phase 7: Educational Games - PENDING"
 	@echo "  ⏳ Phase 8: Presentation Tool - PENDING"

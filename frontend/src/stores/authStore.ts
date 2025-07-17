@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isAuthenticated: true, 
         isLoading: false 
       });
-    } catch {
+    } catch (error) {
       authApi.clearAuthData();
       set({ 
         user: null, 

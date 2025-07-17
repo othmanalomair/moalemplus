@@ -26,14 +26,14 @@ interface SidebarProps {
 
 const navigation = [
   { name: 'الرئيسية', href: '/dashboard', icon: HomeIcon, current: false },
-  { name: 'الفصول', href: '/classes', icon: AcademicCapIcon, current: false },
-  { name: 'الطلاب', href: '/students', icon: UserGroupIcon, current: false },
-  { name: 'الاختبارات', href: '/tests', icon: DocumentTextIcon, current: false },
-  { name: 'التحضير', href: '/lesson-plans', icon: PencilSquareIcon, current: false },
-  { name: 'التقارير', href: '/reports', icon: ChartBarIcon, current: false },
-  { name: 'الألعاب', href: '/games', icon: PuzzlePieceIcon, current: false },
-  { name: 'الرسائل', href: '/messages', icon: ChatBubbleLeftIcon, current: false },
-  { name: 'الإعدادات', href: '/settings', icon: Cog6ToothIcon, current: false },
+  { name: 'الفصول', href: '/dashboard/classes', icon: AcademicCapIcon, current: false },
+  { name: 'الطلاب', href: '/dashboard/students', icon: UserGroupIcon, current: false },
+  { name: 'الاختبارات', href: '/dashboard/tests', icon: DocumentTextIcon, current: false },
+  { name: 'التحضير', href: '/dashboard/lesson-plans', icon: PencilSquareIcon, current: false },
+  { name: 'التقارير', href: '/dashboard/reports', icon: ChartBarIcon, current: false },
+  { name: 'الألعاب', href: '/dashboard/games', icon: PuzzlePieceIcon, current: false },
+  { name: 'الرسائل', href: '/dashboard/messages', icon: ChatBubbleLeftIcon, current: false },
+  { name: 'الإعدادات', href: '/dashboard/settings', icon: Cog6ToothIcon, current: false },
 ];
 
 function classNames(...classes: string[]) {
@@ -108,7 +108,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                         key={item.name}
                         href={item.href}
                         className={classNames(
-                          pathname === item.href
+                          pathname === item.href || pathname.startsWith(item.href + '/')
                             ? 'bg-blue-100 text-blue-700'
                             : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50',
                           'group flex items-center px-2 py-2 text-base font-medium rounded-md'
@@ -117,7 +117,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                       >
                         <item.icon
                           className={classNames(
-                            pathname === item.href ? 'text-blue-500' : 'text-gray-400',
+                            pathname === item.href || pathname.startsWith(item.href + '/') ? 'text-blue-500' : 'text-gray-400',
                             'ml-4 flex-shrink-0 h-6 w-6'
                           )}
                           aria-hidden="true"
@@ -156,7 +156,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
                 key={item.name}
                 href={item.href}
                 className={classNames(
-                  pathname === item.href
+                  pathname === item.href || pathname.startsWith(item.href + '/')
                     ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-700 hover:text-blue-700 hover:bg-gray-50',
                   'group flex items-center px-2 py-2 text-sm font-medium rounded-md'
@@ -164,7 +164,7 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen }: SidebarProps) {
               >
                 <item.icon
                   className={classNames(
-                    pathname === item.href ? 'text-blue-500' : 'text-gray-400',
+                    pathname === item.href || pathname.startsWith(item.href + '/') ? 'text-blue-500' : 'text-gray-400',
                     'ml-3 flex-shrink-0 h-6 w-6'
                   )}
                   aria-hidden="true"

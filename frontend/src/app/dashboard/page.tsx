@@ -1,12 +1,7 @@
 import DashboardHome from '@/components/dashboard/DashboardHome';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 
 export default function DashboardPage() {
-  return (
-    <DashboardLayout>
-      <DashboardHome />
-    </DashboardLayout>
-  );
+  return <DashboardHome />;
 }
 
 export const metadata = {

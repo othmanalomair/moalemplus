@@ -13,6 +13,7 @@ import (
 	_ "github.com/lib/pq"
 
 	"moalemplus/internal/auth"
+	"moalemplus/internal/handlers"
 	"moalemplus/internal/middleware"
 )
 
@@ -57,8 +58,11 @@ func main() {
 		AllowMethods: "GET, POST, PUT, DELETE, OPTIONS",
 	}))
 
-	// Initialize auth service
+	// Initialize services
 	authService := auth.NewService(db)
+	classHandler := handlers.NewClassHandler(db)
+	studentHandler := handlers.NewStudentHandler(db)
+	attendanceHandler := handlers.NewAttendanceHandler(db)
 
 	// API routes
 	api := app.Group("/api")
@@ -71,6 +75,29 @@ func main() {
 	authRoutes.Post("/logout", middleware.AuthMiddleware(authService), authService.Logout)
 	authRoutes.Get("/me", middleware.AuthMiddleware(authService), authService.GetMe)
 	
+	// Protected routes (require authentication) - use specific middleware instead of group
+	// Class routes
+	api.Get("/classes", middleware.AuthMiddleware(authService), classHandler.GetClasses)
+	api.Post("/classes", middleware.AuthMiddleware(authService), classHandler.CreateClass)
+	api.Get("/classes/:id", middleware.AuthMiddleware(authService), classHandler.GetClass)
+	api.Put("/classes/:id", middleware.AuthMiddleware(authService), classHandler.UpdateClass)
+	api.Delete("/classes/:id", middleware.AuthMiddleware(authService), classHandler.DeleteClass)
+	api.Get("/classes/:id/stats", middleware.AuthMiddleware(authService), classHandler.GetClassStats)
+	
+	// Student routes
+	api.Get("/classes/:id/students", middleware.AuthMiddleware(authService), studentHandler.GetClassStudents)
+	api.Post("/classes/:id/students", middleware.AuthMiddleware(authService), studentHandler.CreateStudent)
+	api.Get("/students/:id", middleware.AuthMiddleware(authService), studentHandler.GetStudent)
+	api.Put("/students/:id", middleware.AuthMiddleware(authService), studentHandler.UpdateStudent)
+	api.Delete("/students/:id", middleware.AuthMiddleware(authService), studentHandler.DeleteStudent)
+	
+	// Attendance routes
+	api.Post("/classes/:id/attendance", middleware.AuthMiddleware(authService), attendanceHandler.CreateAttendance)
+	api.Get("/classes/:id/attendance/:date", middleware.AuthMiddleware(authService), attendanceHandler.GetClassAttendance)
+	api.Put("/attendance/:id", middleware.AuthMiddleware(authService), attendanceHandler.UpdateAttendance)
+	api.Get("/students/:id/attendance-report", middleware.AuthMiddleware(authService), attendanceHandler.GetStudentAttendanceReport)
+	
+	// Public endpoints (no auth required)
 	// Schools endpoint
 	api.Get("/schools", func(c *fiber.Ctx) error {
 		rows, err := db.Query("SELECT id, name, district, area, type, is_active FROM schools WHERE is_active = true ORDER BY name")
@@ -99,6 +126,39 @@ func main() {
 		return c.JSON(schools)
 	})
 
+	// Subjects endpoint
+	api.Get("/subjects", func(c *fiber.Ctx) error {
+		rows, err := db.Query("SELECT id, name, name_arabic, code, school_type, grade_level, is_active FROM subjects WHERE is_active = true ORDER BY name_arabic")
+		if err != nil {
+			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch subjects"})
+		}
+		defer rows.Close()
+		
+		var subjects []fiber.Map
+		for rows.Next() {
+			var id, name, nameArabic, code, schoolType string
+			var gradeLevel int
+			var isActive bool
+			err := rows.Scan(&id, &name, &nameArabic, &code, &schoolType, &gradeLevel, &isActive)
+			if err != nil {
+				continue
+			}
+			subjects = append(subjects, fiber.Map{
+				"id": id,
+				"name": name,
+				"name_arabic": nameArabic,
+				"code": code,
+				"school_type": schoolType,
+				"grade_level": gradeLevel,
+				"is_active": isActive,
+			})
+		}
+		if subjects == nil {
+			subjects = []fiber.Map{}
+		}
+		return c.JSON(subjects)
+	})
+	
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{
