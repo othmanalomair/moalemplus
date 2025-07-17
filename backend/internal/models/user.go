@@ -11,28 +11,36 @@ import (
 
 // User represents a teacher user in the system
 type User struct {
-	ID            uuid.UUID `json:"id" db:"id"`
-	CivilID       string    `json:"civil_id" db:"civil_id"`
-	FullName      string    `json:"full_name" db:"full_name"`
-	Email         string    `json:"email" db:"email"`
-	Phone         string    `json:"phone" db:"phone"`
-	PasswordHash  string    `json:"-" db:"password_hash"`
-	SchoolID      uuid.UUID `json:"school_id" db:"school_id"`
-	IsActive      bool      `json:"is_active" db:"is_active"`
-	CreatedAt     time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt     time.Time `json:"updated_at" db:"updated_at"`
+	ID                 uuid.UUID  `json:"id" db:"id"`
+	CivilID            string     `json:"civil_id" db:"civil_id"`
+	FullName           string     `json:"full_name" db:"full_name"`
+	Email              string     `json:"email" db:"email"`
+	Phone              string     `json:"phone" db:"phone"`
+	PasswordHash       string     `json:"-" db:"password_hash"`
+	SchoolID           uuid.UUID  `json:"school_id" db:"school_id"`
+	PrimarySubjectID   *uuid.UUID `json:"primary_subject_id" db:"primary_subject_id"`
+	SecondarySubjectID *uuid.UUID `json:"secondary_subject_id" db:"secondary_subject_id"`
+	SchoolType         string     `json:"school_type" db:"school_type"` // primary, intermediate, secondary
+	IsActive           bool       `json:"is_active" db:"is_active"`
+	CreatedAt          time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt          time.Time  `json:"updated_at" db:"updated_at"`
 }
 
 // School represents a school in the system
 type School struct {
-	ID          uuid.UUID `json:"id" db:"id"`
-	Name        string    `json:"name" db:"name"`
-	District    string    `json:"district" db:"district"`
-	Area        string    `json:"area" db:"area"`
-	Type        string    `json:"type" db:"type"` // primary, intermediate, secondary
-	IsActive    bool      `json:"is_active" db:"is_active"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
+	ID               uuid.UUID    `json:"id" db:"id"`
+	Name             string       `json:"name" db:"name"`
+	District         string       `json:"district" db:"district"`
+	Area             string       `json:"area" db:"area"`
+	Type             string       `json:"type" db:"type"` // primary, intermediate, secondary
+	Attendees        string       `json:"attendees" db:"attendees"` // male, female
+	CreationDate     int          `json:"creation_date" db:"creation_date"`
+	PhoneNumbers     StringArray  `json:"phone_numbers" db:"phone_numbers"`
+	AutomaticNumber  string       `json:"automatic_number" db:"automatic_number"`
+	LocationURL      string       `json:"location_url" db:"location_url"`
+	IsActive         bool         `json:"is_active" db:"is_active"`
+	CreatedAt        time.Time    `json:"created_at" db:"created_at"`
+	UpdatedAt        time.Time    `json:"updated_at" db:"updated_at"`
 }
 
 // Session represents a user session
@@ -53,12 +61,15 @@ type LoginRequest struct {
 
 // RegisterRequest represents the registration request payload
 type RegisterRequest struct {
-	CivilID  string `json:"civil_id" validate:"required"`
-	FullName string `json:"full_name" validate:"required"`
-	Email    string `json:"email" validate:"required,email"`
-	Phone    string `json:"phone" validate:"required"`
-	Password string `json:"password" validate:"required,min=8"`
-	SchoolID string `json:"school_id" validate:"required"`
+	CivilID            string  `json:"civil_id" validate:"required"`
+	FullName           string  `json:"full_name" validate:"required"`
+	Email              string  `json:"email" validate:"required,email"`
+	Phone              string  `json:"phone" validate:"required"`
+	Password           string  `json:"password" validate:"required,min=8"`
+	SchoolID           string  `json:"school_id" validate:"required"`
+	PrimarySubjectID   string  `json:"primary_subject_id" validate:"required"`
+	SecondarySubjectID *string `json:"secondary_subject_id,omitempty"` // Optional, only for Islamic Education teachers
+	SchoolType         string  `json:"school_type" validate:"required"` // primary, intermediate, secondary
 }
 
 // AuthResponse represents the authentication response

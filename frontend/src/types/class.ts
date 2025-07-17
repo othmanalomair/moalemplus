@@ -1,7 +1,10 @@
 export interface Subject {
   id: string;
   name: string;
+  name_arabic?: string;
   code: string;
+  school_type?: string;
+  grade_level?: number;
   is_active: boolean;
   created_at: string;
   updated_at: string;

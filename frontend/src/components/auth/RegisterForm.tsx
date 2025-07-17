@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/stores/authStore';
-import { RegisterRequest, School } from '@/types/auth';
+import { RegisterRequest, School, Subject } from '@/types/auth';
 import Link from 'next/link';
 
 export default function RegisterForm() {
@@ -16,10 +16,16 @@ export default function RegisterForm() {
     phone: '',
     password: '',
     school_id: '',
+    primary_subject_id: '',
+    secondary_subject_id: '',
+    school_type: 'primary',
+    school_gender: 'male',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [schools, setSchools] = useState<School[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loadingSchools, setLoadingSchools] = useState(true);
+  const [loadingSubjects, setLoadingSubjects] = useState(true);
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -32,38 +38,111 @@ export default function RegisterForm() {
     checkAuth();
   }, [isAuthenticated, getCurrentUser, router]);
 
-  // Fetch schools from API
+  // Fetch all schools and subjects on component mount
   useEffect(() => {
-    const fetchSchools = async () => {
+    const fetchData = async () => {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+      
+      // Fetch all schools
       try {
-        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
-        const response = await fetch(`${API_BASE_URL}/api/schools`);
-        if (response.ok) {
-          const schoolsData = await response.json();
-          setSchools(schoolsData);
+        const schoolsResponse = await fetch(`${API_BASE_URL}/schools`);
+        if (schoolsResponse.ok) {
+          const schoolsData = await schoolsResponse.json();
+          setSchools(schoolsData || []);
         } else {
-          console.error('Failed to fetch schools');
+          console.warn('Failed to fetch schools, using empty array');
+          setSchools([]);
         }
       } catch (error) {
-        console.error('Error fetching schools:', error);
+        console.warn('Error fetching schools:', error);
+        setSchools([]);
       } finally {
         setLoadingSchools(false);
       }
+
+      // Fetch all subjects
+      try {
+        const subjectsResponse = await fetch(`${API_BASE_URL}/subjects`);
+        if (subjectsResponse.ok) {
+          const subjectsData = await subjectsResponse.json();
+          setSubjects(subjectsData || []);
+        } else {
+          console.warn('Failed to fetch subjects, using empty array');
+          setSubjects([]);
+        }
+      } catch (error) {
+        console.warn('Error fetching subjects:', error);
+        setSubjects([]);
+      } finally {
+        setLoadingSubjects(false);
+      }
     };
     
-    fetchSchools();
+    fetchData();
   }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => ({ 
+      ...prev, 
+      [name]: value,
+      // Reset dependent fields when school type or gender changes
+      ...(name === 'school_type' ? { school_id: '', primary_subject_id: '', secondary_subject_id: '' } : {}),
+      ...(name === 'school_gender' ? { school_id: '', primary_subject_id: '', secondary_subject_id: '' } : {}),
+      // Clear subjects when school changes
+      ...(name === 'school_id' ? { primary_subject_id: '', secondary_subject_id: '' } : {}),
+      // Clear secondary subject if changing to non-Islamic education
+      ...(name === 'primary_subject_id' && !isIslamicEducation(value) ? { secondary_subject_id: '' } : {})
+    }));
     if (error) clearError();
+  };
+
+  // Check if a subject is Islamic Education (التربية الإسلامية)
+  const isIslamicEducation = (subjectId: string) => {
+    const subject = subjects.find(s => s.id === subjectId);
+    return subject?.name_arabic === 'التربية الإسلامية' || subject?.code?.startsWith('IS');
+  };
+
+  // Get filtered subjects based on school type
+  const getFilteredSubjects = () => {
+    // Group subjects by subject name to show unique subjects
+    const subjectGroups = subjects.reduce((acc, subject) => {
+      const key = subject.name_arabic || subject.name;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(subject);
+      return acc;
+    }, {} as Record<string, typeof subjects>);
+
+    // Filter by school type and return one subject per group
+    return Object.values(subjectGroups)
+      .filter(group => group.some(subject => subject.school_type === formData.school_type))
+      .map(group => group.find(subject => subject.school_type === formData.school_type) || group[0]);
+  };
+
+  // Get schools filtered by type and gender
+  const getFilteredSchools = () => {
+    return schools.filter(school => 
+      school.type === formData.school_type && 
+      school.attendees === formData.school_gender
+    );
+  };
+
+  // Get Quran subject for secondary selection
+  const getQuranSubject = () => {
+    return subjects.find(s => 
+      (s.name_arabic === 'القرآن الكريم' || s.code?.startsWith('QR')) && 
+      s.school_type === formData.school_type
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.civil_id || !formData.full_name || !formData.email || !formData.phone || !formData.password || !formData.school_id) {
+    if (!formData.civil_id || !formData.full_name || !formData.email || !formData.phone || 
+        !formData.password || !formData.school_id || !formData.primary_subject_id || 
+        !formData.school_type || !formData.school_gender) {
       return;
     }
 
@@ -75,7 +154,9 @@ export default function RegisterForm() {
       // Add +965 prefix to phone number before submitting
       const submitData = {
         ...formData,
-        phone: `+965${formData.phone}`
+        phone: `+965${formData.phone}`,
+        // Only include secondary_subject_id if it's filled
+        secondary_subject_id: formData.secondary_subject_id || undefined
       };
       await register(submitData);
       router.push('/dashboard');
@@ -230,7 +311,59 @@ export default function RegisterForm() {
                 </div>
               </div>
 
-              {/* School */}
+
+              {/* School Type */}
+              <div>
+                <label htmlFor="school_type" className="block text-sm font-medium text-gray-700 mb-2">
+                  نوع المدرسة
+                </label>
+                <div className="relative">
+                  <select
+                    id="school_type"
+                    name="school_type"
+                    required
+                    className="appearance-none relative block w-full pl-4 pr-12 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-gray-900"
+                    value={formData.school_type}
+                    onChange={handleChange}
+                  >
+                    <option value="primary" className="text-gray-900">ابتدائي</option>
+                    <option value="intermediate" className="text-gray-900">متوسط</option>
+                    <option value="secondary" className="text-gray-900">ثانوي</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* School Gender */}
+              <div>
+                <label htmlFor="school_gender" className="block text-sm font-medium text-gray-700 mb-2">
+                  نوع الطلاب
+                </label>
+                <div className="relative">
+                  <select
+                    id="school_gender"
+                    name="school_gender"
+                    required
+                    className="appearance-none relative block w-full pl-4 pr-12 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-gray-900"
+                    value={formData.school_gender}
+                    onChange={handleChange}
+                  >
+                    <option value="male" className="text-gray-900">بنين</option>
+                    <option value="female" className="text-gray-900">بنات</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* School Selection */}
               <div className="md:col-span-2">
                 <label htmlFor="school_id" className="block text-sm font-medium text-gray-700 mb-2">
                   المدرسة
@@ -243,6 +376,13 @@ export default function RegisterForm() {
                     </svg>
                     جاري تحميل المدارس...
                   </div>
+                ) : getFilteredSchools().length === 0 ? (
+                  <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-yellow-50 flex items-center">
+                    <svg className="h-5 w-5 text-yellow-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                    لا توجد مدارس متاحة للنوع والجنس المحدد
+                  </div>
                 ) : (
                   <div className="relative">
                     <select
@@ -254,9 +394,9 @@ export default function RegisterForm() {
                       onChange={handleChange}
                     >
                       <option value="" className="text-gray-500">اختر المدرسة</option>
-                      {schools.map((school) => (
+                      {getFilteredSchools().map((school) => (
                         <option key={school.id} value={school.id} className="text-gray-900 py-2">
-                          {school.name} - {getSchoolTypeText(school.type)} ({school.district})
+                          {school.name} - {school.district}
                         </option>
                       ))}
                     </select>
@@ -268,6 +408,80 @@ export default function RegisterForm() {
                   </div>
                 )}
               </div>
+
+              {/* Primary Subject - Only show when school is selected */}
+              {formData.school_id && (
+                <div className="md:col-span-2">
+                  <label htmlFor="primary_subject_id" className="block text-sm font-medium text-gray-700 mb-2">
+                    المادة التي تدرسها
+                  </label>
+                  {loadingSubjects ? (
+                    <div className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 flex items-center">
+                      <svg className="animate-spin h-5 w-5 text-gray-400 mr-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 714 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      جاري تحميل المواد...
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <select
+                        id="primary_subject_id"
+                        name="primary_subject_id"
+                        required
+                        className="appearance-none relative block w-full pl-4 pr-12 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-gray-900"
+                        value={formData.primary_subject_id}
+                        onChange={handleChange}
+                      >
+                        <option value="" className="text-gray-500">اختر المادة</option>
+                        {getFilteredSubjects().map((subject) => (
+                          <option key={subject.id} value={subject.id} className="text-gray-900 py-2">
+                            {subject.name_arabic || subject.name}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                        </svg>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Secondary Subject (only for Islamic Education teachers) */}
+              {isIslamicEducation(formData.primary_subject_id) && (
+                <div className="md:col-span-2">
+                  <label htmlFor="secondary_subject_id" className="block text-sm font-medium text-gray-700 mb-2">
+                    المادة الثانية (اختياري للتربية الإسلامية)
+                  </label>
+                  <div className="relative">
+                    <select
+                      id="secondary_subject_id"
+                      name="secondary_subject_id"
+                      className="appearance-none relative block w-full pl-4 pr-12 py-3 border border-gray-300 bg-white rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-gray-900"
+                      value={formData.secondary_subject_id || ''}
+                      onChange={handleChange}
+                    >
+                      <option value="" className="text-gray-500">لا توجد مادة ثانية</option>
+                      {getQuranSubject() && (
+                        <option value={getQuranSubject()!.id} className="text-gray-900 py-2">
+                          {getQuranSubject()!.name_arabic || getQuranSubject()!.name}
+                        </option>
+                      )}
+                    </select>
+                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                  </div>
+                  <p className="mt-2 text-sm text-gray-500">
+                    معلمو التربية الإسلامية يمكنهم اختيار القرآن الكريم كمادة ثانية
+                  </p>
+                </div>
+              )}
 
               {/* Password */}
               <div>

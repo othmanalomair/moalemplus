@@ -4,7 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Save, Users, Calendar, BookOpen, Hash } from 'lucide-react';
 import { classApi, subjectsApi } from '@/lib/api/classes';
-import { CreateClassRequest, Subject } from '@/types/class';
+import { CreateClassRequest } from '@/types/class';
+import { Subject } from '@/types/auth';
+import { useAuthStore } from '@/stores/authStore';
 
 export default function NewClassPage() {
   const [formData, setFormData] = useState<CreateClassRequest>({
@@ -12,35 +14,59 @@ export default function NewClassPage() {
     subject_id: '',
     school_year: new Date().getFullYear() + '-' + (new Date().getFullYear() + 1),
     semester: 'first',
-    class_section: '',
+    class_section: '1',
     max_students: 30,
   });
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const { user } = useAuthStore();
 
   useEffect(() => {
     const fetchSubjects = async () => {
+      if (!user) return;
+      
       try {
-        const data = await subjectsApi.getSubjects();
-        setSubjects(data || []);
+        const allSubjects = await subjectsApi.getSubjects();
+        
+        // Filter subjects based on what the teacher teaches
+        const teacherSubjects = [];
+        
+        // Add primary subject
+        if (user.primary_subject_id) {
+          const primarySubject = allSubjects.find(s => s.id === user.primary_subject_id);
+          if (primarySubject) {
+            // Find all subjects of the same type for the teacher's school type
+            const sameTypeSubjects = allSubjects.filter(s => 
+              s.name_arabic === primarySubject.name_arabic && 
+              s.school_type === user.school_type
+            );
+            teacherSubjects.push(...sameTypeSubjects);
+          }
+        }
+        
+        // Add secondary subject (for Islamic Education teachers who also teach Quran)
+        if (user.secondary_subject_id) {
+          const secondarySubject = allSubjects.find(s => s.id === user.secondary_subject_id);
+          if (secondarySubject) {
+            const sameTypeSubjects = allSubjects.filter(s => 
+              s.name_arabic === secondarySubject.name_arabic && 
+              s.school_type === user.school_type
+            );
+            teacherSubjects.push(...sameTypeSubjects);
+          }
+        }
+        
+        setSubjects(teacherSubjects || []);
       } catch (err) {
         console.error('Failed to fetch subjects:', err);
-        // Fallback to mock data if API fails
-        setSubjects([
-          { id: '1', name: 'الرياضيات', code: 'MATH', is_active: true, created_at: '', updated_at: '' },
-          { id: '2', name: 'العلوم', code: 'SCI', is_active: true, created_at: '', updated_at: '' },
-          { id: '3', name: 'اللغة العربية', code: 'AR', is_active: true, created_at: '', updated_at: '' },
-          { id: '4', name: 'اللغة الإنجليزية', code: 'EN', is_active: true, created_at: '', updated_at: '' },
-          { id: '5', name: 'التربية الإسلامية', code: 'IS', is_active: true, created_at: '', updated_at: '' },
-          { id: '6', name: 'الدراسات الاجتماعية', code: 'SS', is_active: true, created_at: '', updated_at: '' },
-        ]);
+        setSubjects([]);
       }
     };
 
     fetchSubjects();
-  }, []);
+  }, [user]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -67,6 +93,31 @@ export default function NewClassPage() {
 
   const handleCancel = () => {
     router.push('/dashboard/classes');
+  };
+
+  // Helper function to format subject name with grade level
+  const formatSubjectName = (subject: Subject) => {
+    const gradeText = getGradeText(subject.grade_level);
+    return `${subject.name_arabic || subject.name} - ${gradeText}`;
+  };
+
+  // Helper function to convert grade number to Arabic text
+  const getGradeText = (grade: number) => {
+    const gradeNames = {
+      1: 'الصف الأول',
+      2: 'الصف الثاني', 
+      3: 'الصف الثالث',
+      4: 'الصف الرابع',
+      5: 'الصف الخامس',
+      6: 'الصف السادس',
+      7: 'الصف السابع',
+      8: 'الصف الثامن',
+      9: 'الصف التاسع',
+      10: 'الصف العاشر',
+      11: 'الصف الحادي عشر',
+      12: 'الصف الثاني عشر'
+    };
+    return gradeNames[grade as keyof typeof gradeNames] || `الصف ${grade}`;
   };
 
   return (
@@ -128,7 +179,7 @@ export default function NewClassPage() {
                 <option value="">اختر المادة</option>
                 {subjects.map(subject => (
                   <option key={subject.id} value={subject.id}>
-                    {subject.name_arabic || subject.name}
+                    {formatSubjectName(subject)}
                   </option>
                 ))}
               </select>
@@ -175,15 +226,21 @@ export default function NewClassPage() {
                 <Hash className="inline ml-1" size={16} />
                 الشعبة
               </label>
-              <input
-                type="text"
+              <select
                 name="class_section"
                 value={formData.class_section}
                 onChange={handleInputChange}
                 required
-                placeholder="مثال: أ، ب، ج"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white"
-              />
+              >
+                <option value="">اختر الشعبة</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map(num => (
+                  <option key={num} value={num.toString()}>الشعبة {num}</option>
+                ))}
+              </select>
+              <p className="mt-1 text-sm text-gray-500">
+                اختر رقم الشعبة (1-12 أو أكثر حسب حجم المدرسة)
+              </p>
             </div>
 
             {/* Max Students */}

@@ -59,24 +59,57 @@ func (s *Service) Register(c *fiber.Ctx) error {
 		})
 	}
 
+	// Parse primary subject ID
+	primarySubjectID, err := uuid.Parse(req.PrimarySubjectID)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+			Error:   true,
+			Message: "Invalid primary subject ID format",
+		})
+	}
+
+	// Parse secondary subject ID if provided
+	var secondarySubjectID *uuid.UUID
+	if req.SecondarySubjectID != nil && *req.SecondarySubjectID != "" {
+		parsedSecondaryID, err := uuid.Parse(*req.SecondarySubjectID)
+		if err != nil {
+			return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+				Error:   true,
+				Message: "Invalid secondary subject ID format",
+			})
+		}
+		secondarySubjectID = &parsedSecondaryID
+	}
+
+	// Validate school type
+	if req.SchoolType != "primary" && req.SchoolType != "intermediate" && req.SchoolType != "secondary" {
+		return c.Status(fiber.StatusBadRequest).JSON(models.ErrorResponse{
+			Error:   true,
+			Message: "Invalid school type. Must be primary, intermediate, or secondary",
+		})
+	}
+
 	// Create user
 	user := models.User{
-		ID:           uuid.New(),
-		CivilID:      req.CivilID,
-		FullName:     req.FullName,
-		Email:        req.Email,
-		Phone:        req.Phone,
-		PasswordHash: string(hashedPassword),
-		SchoolID:     schoolID,
-		IsActive:     true,
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		ID:                 uuid.New(),
+		CivilID:            req.CivilID,
+		FullName:           req.FullName,
+		Email:              req.Email,
+		Phone:              req.Phone,
+		PasswordHash:       string(hashedPassword),
+		SchoolID:           schoolID,
+		PrimarySubjectID:   &primarySubjectID,
+		SecondarySubjectID: secondarySubjectID,
+		SchoolType:         req.SchoolType,
+		IsActive:           true,
+		CreatedAt:          time.Now(),
+		UpdatedAt:          time.Now(),
 	}
 
 	_, err = s.db.Exec(`
-		INSERT INTO users (id, civil_id, full_name, email, phone, password_hash, school_id, is_active, created_at, updated_at)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-	`, user.ID, user.CivilID, user.FullName, user.Email, user.Phone, user.PasswordHash, user.SchoolID, user.IsActive, user.CreatedAt, user.UpdatedAt)
+		INSERT INTO users (id, civil_id, full_name, email, phone, password_hash, school_id, primary_subject_id, secondary_subject_id, school_type, is_active, created_at, updated_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+	`, user.ID, user.CivilID, user.FullName, user.Email, user.Phone, user.PasswordHash, user.SchoolID, user.PrimarySubjectID, user.SecondarySubjectID, user.SchoolType, user.IsActive, user.CreatedAt, user.UpdatedAt)
 	
 	if err != nil {
 		// Log the actual error for debugging
@@ -126,9 +159,9 @@ func (s *Service) Login(c *fiber.Ctx) error {
 	// Find user by civil ID
 	var user models.User
 	err := s.db.QueryRow(`
-		SELECT id, civil_id, full_name, email, phone, password_hash, school_id, is_active, created_at, updated_at
+		SELECT id, civil_id, full_name, email, phone, password_hash, school_id, primary_subject_id, secondary_subject_id, school_type, is_active, created_at, updated_at
 		FROM users WHERE civil_id = $1 AND is_active = true
-	`, req.CivilID).Scan(&user.ID, &user.CivilID, &user.FullName, &user.Email, &user.Phone, &user.PasswordHash, &user.SchoolID, &user.IsActive, &user.CreatedAt, &user.UpdatedAt)
+	`, req.CivilID).Scan(&user.ID, &user.CivilID, &user.FullName, &user.Email, &user.Phone, &user.PasswordHash, &user.SchoolID, &user.PrimarySubjectID, &user.SecondarySubjectID, &user.SchoolType, &user.IsActive, &user.CreatedAt, &user.UpdatedAt)
 	
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -246,9 +279,9 @@ func (s *Service) GetMe(c *fiber.Ctx) error {
 
 	var user models.User
 	err := s.db.QueryRow(`
-		SELECT id, civil_id, full_name, email, phone, school_id, is_active, created_at, updated_at
+		SELECT id, civil_id, full_name, email, phone, school_id, primary_subject_id, secondary_subject_id, school_type, is_active, created_at, updated_at
 		FROM users WHERE id = $1 AND is_active = true
-	`, userID).Scan(&user.ID, &user.CivilID, &user.FullName, &user.Email, &user.Phone, &user.SchoolID, &user.IsActive, &user.CreatedAt, &user.UpdatedAt)
+	`, userID).Scan(&user.ID, &user.CivilID, &user.FullName, &user.Email, &user.Phone, &user.SchoolID, &user.PrimarySubjectID, &user.SecondarySubjectID, &user.SchoolType, &user.IsActive, &user.CreatedAt, &user.UpdatedAt)
 	
 	if err != nil {
 		if err == sql.ErrNoRows {

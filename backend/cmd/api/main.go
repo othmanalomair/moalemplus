@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/joho/godotenv"
+	"github.com/lib/pq"
 	_ "github.com/lib/pq"
 
 	"moalemplus/internal/auth"
@@ -100,7 +101,13 @@ func main() {
 	// Public endpoints (no auth required)
 	// Schools endpoint
 	api.Get("/schools", func(c *fiber.Ctx) error {
-		rows, err := db.Query("SELECT id, name, district, area, type, is_active FROM schools WHERE is_active = true ORDER BY name")
+		rows, err := db.Query(`
+			SELECT id, name, district, area, type, attendees, creation_date, 
+			       phone_numbers, automatic_number, location_url, is_active 
+			FROM schools 
+			WHERE is_active = true 
+			ORDER BY name
+		`)
 		if err != nil {
 			return c.Status(500).JSON(fiber.Map{"error": "Failed to fetch schools"})
 		}
@@ -108,9 +115,12 @@ func main() {
 		
 		var schools []fiber.Map
 		for rows.Next() {
-			var id, name, district, area, schoolType string
+			var id, name, district, area, schoolType, attendees, automaticNumber, locationURL string
+			var creationDate int
+			var phoneNumbers pq.StringArray
 			var isActive bool
-			err := rows.Scan(&id, &name, &district, &area, &schoolType, &isActive)
+			err := rows.Scan(&id, &name, &district, &area, &schoolType, &attendees, 
+				&creationDate, &phoneNumbers, &automaticNumber, &locationURL, &isActive)
 			if err != nil {
 				continue
 			}
@@ -120,6 +130,11 @@ func main() {
 				"district": district,
 				"area": area,
 				"type": schoolType,
+				"attendees": attendees,
+				"creation_date": creationDate,
+				"phone_numbers": []string(phoneNumbers),
+				"automatic_number": automaticNumber,
+				"location_url": locationURL,
 				"is_active": isActive,
 			})
 		}
