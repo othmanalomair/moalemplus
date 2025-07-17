@@ -36,7 +36,8 @@ export default function RegisterForm() {
   useEffect(() => {
     const fetchSchools = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/schools');
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const response = await fetch(`${API_BASE_URL}/api/schools`);
         if (response.ok) {
           const schoolsData = await response.json();
           setSchools(schoolsData);
@@ -78,7 +79,7 @@ export default function RegisterForm() {
       };
       await register(submitData);
       router.push('/dashboard');
-    } catch (error) {
+    } catch {
       // Error is handled by the store
     }
   };

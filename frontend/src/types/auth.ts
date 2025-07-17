@@ -51,7 +51,7 @@ export interface ApiError {
   message: string;
 }
 
-export interface ApiSuccess<T = any> {
+export interface ApiSuccess<T = unknown> {
   success: boolean;
   message: string;
   data?: T;

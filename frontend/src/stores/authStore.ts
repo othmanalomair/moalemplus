@@ -16,7 +16,7 @@ interface AuthState {
   clearError: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set, get) => ({
+export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
@@ -32,8 +32,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true, 
         isLoading: false 
       });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'فشل في تسجيل الدخول';
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'فشل في تسجيل الدخول';
       set({ 
         error: errorMessage, 
         isLoading: false, 
@@ -53,8 +53,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true, 
         isLoading: false 
       });
-    } catch (error: any) {
-      const errorMessage = error.response?.data?.message || 'فشل في إنشاء الحساب';
+    } catch (error: unknown) {
+      const errorMessage = (error as { response?: { data?: { message?: string } } })?.response?.data?.message || 'فشل في إنشاء الحساب';
       set({ 
         error: errorMessage, 
         isLoading: false, 
@@ -90,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true, 
         isLoading: false 
       });
-    } catch (error: any) {
+    } catch {
       authApi.clearAuthData();
       set({ 
         user: null, 

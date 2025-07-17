@@ -42,7 +42,7 @@ export default function LoginForm() {
     try {
       await login(formData);
       router.push('/dashboard');
-    } catch (error) {
+    } catch {
       // Error is handled by the store
     }
   };

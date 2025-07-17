@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AuthResponse, LoginRequest, RegisterRequest, RefreshTokenRequest, User, ApiError, ApiSuccess } from '@/types/auth';
+import { AuthResponse, LoginRequest, RegisterRequest, RefreshTokenRequest, User, ApiSuccess } from '@/types/auth';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
@@ -48,7 +48,7 @@ api.interceptors.response.use(
           originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return api(originalRequest);
         }
-      } catch (refreshError) {
+      } catch {
         // Refresh failed, redirect to login
         localStorage.removeItem('access_token');
         localStorage.removeItem('refresh_token');
