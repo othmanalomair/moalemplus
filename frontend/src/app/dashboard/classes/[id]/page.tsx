@@ -81,7 +81,7 @@ export default function ClassDetailsPage({ params }: ClassDetailsPageProps) {
     }
   }, [id, fetchClassData, fetchStudents, fetchStats]);
 
-  const filteredStudents = students.filter(student => {
+  const filteredStudents = students?.filter(student => {
     const matchesSearch = student.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.arabic_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,7 +90,7 @@ export default function ClassDetailsPage({ params }: ClassDetailsPageProps) {
     const matchesGender = filterGender === 'all' || student.gender === filterGender;
     
     return matchesSearch && matchesGender;
-  });
+  }) || [];
 
   const handleAddStudent = () => {
     router.push(`/dashboard/classes/${id}/students/new`);
@@ -281,7 +281,7 @@ export default function ClassDetailsPage({ params }: ClassDetailsPageProps) {
                     placeholder="البحث في الطلاب..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -289,7 +289,7 @@ export default function ClassDetailsPage({ params }: ClassDetailsPageProps) {
                   <select
                     value={filterGender}
                     onChange={(e) => setFilterGender(e.target.value as 'all' | 'male' | 'female')}
-                    className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900"
                   >
                     <option value="all">جميع الطلاب</option>
                     <option value="male">الذكور</option>

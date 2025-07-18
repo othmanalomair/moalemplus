@@ -127,7 +127,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 required
                 placeholder="مثال: 2024001"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -144,7 +144,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 placeholder="12 رقم"
                 maxLength={12}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -161,7 +161,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 required
                 placeholder="مثال: أحمد"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -178,7 +178,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 required
                 placeholder="مثال: المحمد"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -195,7 +195,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 required
                 placeholder="مثال: أحمد محمد علي المحمد"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -211,7 +211,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 value={formData.date_of_birth}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
 
@@ -226,7 +226,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 value={formData.gender}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               >
                 <option value="male">ذكر</option>
                 <option value="female">أنثى</option>
@@ -244,7 +244,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 value={formData.nationality}
                 onChange={handleInputChange}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               >
                 <option value="الكويت">الكويت</option>
                 <option value="السعودية">السعودية</option>
@@ -280,7 +280,7 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
                 onChange={handleInputChange}
                 placeholder="مثال: منطقة الجهراء، قطعة 1، شارع 12، منزل 34"
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-gray-900 placeholder-gray-500"
               />
             </div>
           </div>
@@ -290,14 +290,14 @@ export default function NewStudentPage({ params }: NewStudentPageProps) {
             <button
               type="button"
               onClick={handleCancel}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+              className="px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
             >
               إلغاء
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors"
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 transition-colors shadow-sm"
             >
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
